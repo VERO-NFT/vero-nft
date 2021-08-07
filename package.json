@@ -1,0 +1,23 @@
+{
+  "name": "vero-nft",
+  "version": "1.0.0",
+  "description": "More details to come...",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jcora-nyt/vero-nft.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jcora-nyt/vero-nft/issues"
+  },
+  "homepage": "https://github.com/jcora-nyt/vero-nft#readme",
+  "dependencies": {
+    "truffle": "^5.4.5"
+  }
+}
