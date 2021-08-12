@@ -1,0 +1,26 @@
+{
+  "title": "VERO Metadata Schema - extended from ERC721 Metadata JSON Schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Identifies the asset to which this NFT represents"
+    },
+    "description": {
+      "type": "string",
+      "description": "Describes the asset to which this NFT represents"
+    },
+    "external_url": {
+      "type": "string",
+      "description": "A URI pointing to a single, public record for the real object, which lists the real object owner and the unique identifiers."
+    },
+    "image": {
+      "type": "string",
+      "description": "A URI pointing to a resource with mime type image/* representing the asset to which this NFT represents."
+    },
+    "model": {
+      "type": "string",
+      "description": "A URI pointing to 3D model representing the asset to which this NFT represents, which is required to become a VERO. File must be freely available and not behind any access control gating."
+    }
+  }
+}

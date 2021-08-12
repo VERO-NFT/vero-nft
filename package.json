@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "compile-contract": "truffle compile contracts/**/*.sol",
     "solhint": "./node_modules/.bin/solhint -f table contracts/**/*.sol"
   },
   "repository": {
@@ -20,6 +21,7 @@
   "homepage": "https://github.com/jcora-nyt/vero-nft#readme",
   "devDependencies": {
     "@openzeppelin/contracts": "^4.2.0",
+    "chai": "^4.3.4",
     "solhint": "^3.3.6",
     "truffle": "^5.1.65"
   }
