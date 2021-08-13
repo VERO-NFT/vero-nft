@@ -5,9 +5,12 @@ require('chai')
     .should()
 
 contract('Vero', (accounts) => {
+    let faker
     let contract
+    const address0 = '0x0000000000000000000000000000000000000000'
 
     before(async () => {
+        faker = require('faker')
         contract = await Vero.deployed()
     })
 
@@ -32,14 +35,11 @@ contract('Vero', (accounts) => {
     })
 
     describe('minting', async () => {
-        let faker
         let tokenUri
         let result
         let event
 
         beforeEach(async () => {
-            faker = require('faker')
-            //const address = faker.finance.ethereumAddress()
             tokenUri = faker.internet.url()
             result = await contract.createAsPending(tokenUri)
             event = result.logs[0].args
@@ -47,14 +47,14 @@ contract('Vero', (accounts) => {
 
         it('creates a new NFT', async () => {
             const totalSupply = await contract.totalSupply()
-            assert.equal(totalSupply, 1)
+            assert.equal(totalSupply.toNumber(), 1)
             assert.equal(event.tokenId.toNumber(), 1, 'id is correct')
-            assert.equal(event.from, '0x0000000000000000000000000000000000000000', 'from is correct')
+            assert.equal(event.from, address0, 'from is correct')
             assert.equal(event.to, accounts[0], 'to is correct')
         })
 
         it('assures token URI for NFT is unique', async () => {
-            await contract.createAsPending(tokenUri).should.be.rejected;
+            await contract.createAsPending(tokenUri).should.be.rejected
         })
 
         it('creates NFT with VERO status as PENDING', async () => {
@@ -63,57 +63,130 @@ contract('Vero', (accounts) => {
         })
     })
 
-    describe('purchasing', async () => {
-        let faker
-        let tokenUri
-        let result
-        let event
-
-        beforeEach(async () => {
-            faker = require('faker')
-            //const address = faker.finance.ethereumAddress()
-            tokenUri = faker.internet.url()
-            result = await contract.createAsPending(tokenUri)
-            event = result.logs[0].args
-        })
-
-        it('...', async () => {
-        })
-    })
-
     describe('transferring', async () => {
-        let faker
+        let randomAcctIndex
+        let senderAddress
+        let otherAddress
         let tokenUri
         let result
         let event
 
         beforeEach(async () => {
-            faker = require('faker')
-            //const address = faker.finance.ethereumAddress()
+            randomAcctIndex = faker.datatype.number({
+                'min': 0,
+                'max': accounts.length - 1,
+            })
+            senderAddress = accounts[randomAcctIndex]
+            otherAddress = accounts[(randomAcctIndex + 1) % accounts.length]
             tokenUri = faker.internet.url()
-            result = await contract.createAsPending(tokenUri)
+            result = await contract.createAsPending(tokenUri, { from: senderAddress })
             event = result.logs[0].args
         })
 
-        it('...', async () => {
+        it('transfers NFT from owner to another address', async () => {
+            const tokenId = event.tokenId.toNumber()
+            await contract.transferFrom(senderAddress, otherAddress, tokenId,
+                { from: senderAddress }
+            )
+            const owner = await contract.ownerOf(tokenId)
+            assert.equal(owner, otherAddress)
+            assert.notEqual(owner, senderAddress)
+        })
+
+        it('transfers NFT from owner to another address through a third party', async () => {
+            const thirdPartyAddress = accounts[(randomAcctIndex + 2) % accounts.length]
+            const tokenId = event.tokenId.toNumber()
+            await contract.approve(thirdPartyAddress, tokenId,
+                { from: senderAddress }
+            )
+            const approved = await contract.getApproved(tokenId)
+            await contract.safeTransferFrom(senderAddress, otherAddress, tokenId,
+                { from: thirdPartyAddress }
+            )
+            const owner = await contract.ownerOf(tokenId)
+            const approvedAfter = await contract.getApproved(tokenId)
+            assert.equal(approved, thirdPartyAddress)
+            assert.notEqual(approved, senderAddress)
+            assert.notEqual(approved, otherAddress)
+            assert.equal(owner, otherAddress)
+            assert.notEqual(owner, senderAddress)
+            assert.notEqual(owner, thirdPartyAddress)
+            assert.equal(approvedAfter, address0)
+            assert.notEqual(approvedAfter, thirdPartyAddress)
+            assert.notEqual(approvedAfter, senderAddress)
+            assert.notEqual(approvedAfter, otherAddress)
+        })
+
+        it('prevents transfer of an NFT that sender does not own', async () => {
+            const tokenId = event.tokenId.toNumber()
+            await contract.transferFrom(senderAddress, otherAddress, tokenId,
+                { from: otherAddress }
+            ).should.be.rejected
         })
     })
 
     describe('accounting', async () => {
-        let faker
-        let tokenUri
-        let result
-        let event
+        describe('individual', async () => {
+            let senderAddress
+            let otherAddress
+            let tokenUri
+            let result
+            let event
 
-        beforeEach(async () => {
-            faker = require('faker')
-            //const address = faker.finance.ethereumAddress()
-            tokenUri = faker.internet.url()
-            result = await contract.createAsPending(tokenUri)
-            event = result.logs[0].args
+            beforeEach(async () => {
+                const randomAcctIndex = faker.datatype.number({
+                    'min': 0,
+                    'max': accounts.length - 1,
+                })
+                senderAddress = accounts[randomAcctIndex]
+                otherAddress = accounts[(randomAcctIndex + 1) % accounts.length]
+                tokenUri = faker.internet.url()
+                result = await contract.createAsPending(tokenUri, { from: senderAddress })
+                event = result.logs[0].args
+            })
+
+            it('has proper balances for owner after minting', async () => {
+                const acct1Balance = await contract.balanceOf(senderAddress)
+                const acct2Balance = await contract.balanceOf(otherAddress)
+                await contract.createAsPending(faker.internet.url(), { from: senderAddress })
+                const acct1Balance2 = await contract.balanceOf(senderAddress)
+                const acct2Balance2 = await contract.balanceOf(otherAddress)
+                assert.equal(acct1Balance.toNumber() + 1, acct1Balance2.toNumber())
+                assert.equal(acct2Balance.toNumber(), acct2Balance2.toNumber())
+            })
+
+            it('has correct owner for newly minted NFT', async () => {
+                const owner = await contract.ownerOf(event.tokenId.toNumber())
+                assert.equal(owner, senderAddress)
+                assert.notEqual(owner, otherAddress)
+            })
         })
 
-        it('...', async () => {
+        describe('contract-wide', async () => {
+            let senderAddress
+            let otherAddress
+            let tokenUri
+            let result
+            let event
+
+            beforeEach(async () => {
+                const randomAcctIndex = faker.datatype.number({
+                    'min': 0,
+                    'max': accounts.length - 1,
+                })
+                senderAddress = accounts[randomAcctIndex]
+                otherAddress = accounts[(randomAcctIndex + 1) % accounts.length]
+                tokenUri = faker.internet.url()
+                result = await contract.createAsPending(tokenUri, { from: senderAddress })
+                event = result.logs[0].args
+            })
+
+            it('has correct number of NFTs minted', async () => {
+                const totalSupply = await contract.totalSupply()
+                await contract.createAsPending(faker.internet.url(), { from: otherAddress })
+                const totalSupply2 = await contract.totalSupply()
+                assert.equal(totalSupply.toNumber() + 1, totalSupply2.toNumber())
+            })
         })
     })
 })
