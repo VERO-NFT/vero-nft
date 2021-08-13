@@ -43,7 +43,7 @@ contract('Vero', (accounts) => {
             tokenUri = faker.internet.url()
             result = await contract.createAsPending(tokenUri)
             event = result.logs[0].args
-        });
+        })
 
         it('creates a new NFT', async () => {
             const totalSupply = await contract.totalSupply()
@@ -53,9 +53,67 @@ contract('Vero', (accounts) => {
             assert.equal(event.to, accounts[0], 'to is correct')
         })
 
+        it('assures token URI for NFT is unique', async () => {
+            await contract.createAsPending(tokenUri).should.be.rejected;
+        })
+
         it('creates NFT with VERO status as PENDING', async () => {
             const veroStatus = await contract.getVeroStatus(event.tokenId.toNumber())
             assert.equal(veroStatus.toNumber(), 0)
+        })
+    })
+
+    describe('purchasing', async () => {
+        let faker
+        let tokenUri
+        let result
+        let event
+
+        beforeEach(async () => {
+            faker = require('faker')
+            //const address = faker.finance.ethereumAddress()
+            tokenUri = faker.internet.url()
+            result = await contract.createAsPending(tokenUri)
+            event = result.logs[0].args
+        })
+
+        it('...', async () => {
+        })
+    })
+
+    describe('transferring', async () => {
+        let faker
+        let tokenUri
+        let result
+        let event
+
+        beforeEach(async () => {
+            faker = require('faker')
+            //const address = faker.finance.ethereumAddress()
+            tokenUri = faker.internet.url()
+            result = await contract.createAsPending(tokenUri)
+            event = result.logs[0].args
+        })
+
+        it('...', async () => {
+        })
+    })
+
+    describe('accounting', async () => {
+        let faker
+        let tokenUri
+        let result
+        let event
+
+        beforeEach(async () => {
+            faker = require('faker')
+            //const address = faker.finance.ethereumAddress()
+            tokenUri = faker.internet.url()
+            result = await contract.createAsPending(tokenUri)
+            event = result.logs[0].args
+        })
+
+        it('...', async () => {
         })
     })
 })

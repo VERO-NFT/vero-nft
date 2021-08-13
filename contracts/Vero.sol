@@ -14,12 +14,13 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 ///  standard NFT (ERC-721) functions. Using some ERC-721 optional extension contracts to make
 ///  a VERO more usable on the blockchain and to have token metadata stored off the blockchain.
 contract Vero is ERC721Enumerable, ERC721URIStorage {
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
-
     // Tracks VERO status for all NFTs minted against this contract
     enum VeroStatuses { PENDING, APPROVED, REJECTED }
     mapping(uint256 => VeroStatuses) private _veroStatuses;
+
+    // Tracks uniqueness of VERO token URIs, which are stored off-chain
+    string[] private _tokenUris;
+    mapping(string => bool) private _tokenUriExists;
 
     constructor() ERC721("VERO", unicode"w̥") {}
 
@@ -36,9 +37,7 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
         require(msg.sender != address(0), "VERO: cannot mint against null address");
         require(msg.sender != address(this), "VERO: cannot mint against this contract address");
 
-        _tokenIds.increment();
-
-        uint256 newTokenId = _tokenIds.current();
+        uint256 newTokenId = _consumeTokenUri(_tokenURI);
         _mint(msg.sender, newTokenId);
         _setTokenURI(newTokenId, _tokenURI);
         _setDefaultVeroStatus(newTokenId);
@@ -51,6 +50,18 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
     /// @return VERO status for the NFT using VeroStatuses enum value
     function getVeroStatus(uint256 tokenId) public view virtual returns (VeroStatuses) {
         return _veroStatuses[tokenId];
+    }
+
+    /// @dev Adds the token URI to the list of used token URIs, if unused, so it cannot be reused
+    /// @param @param _tokenURI The token URI to not allow for subsequent minting upon
+    /// @return tokenId for the token URI
+    function _consumeTokenUri(string memory _tokenUri) internal virtual returns (uint256)  {
+        require(!_tokenUriExists[_tokenUri], "VERO: cannot mint with an already used token URI");
+
+        _tokenUris.push(_tokenUri);
+        uint256 tokenId = _tokenUris.length;
+        _tokenUriExists[_tokenUri] = true;
+        return tokenId;
     }
 
     /// @dev Sets the default VERO status for the NFT, which is PENDING
