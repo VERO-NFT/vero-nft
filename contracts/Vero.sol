@@ -18,36 +18,45 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
     Counters.Counter private _tokenIds;
 
     // Tracks VERO status for all NFTs minted against this contract
-    enum Statuses { PENDING, APPROVED, REJECTED }
-    mapping(uint256 => Statuses) private _veroStatuses;
+    enum VeroStatuses { PENDING, APPROVED, REJECTED }
+    mapping(uint256 => VeroStatuses) private _veroStatuses;
 
     constructor() ERC721("VERO", unicode"w̥") {}
 
     // VERO-specific functions ////////////////////////////////////////////////////////////////////
 
-    /// @notice Creates an NFT with token metadata stored off-chain and stores the VERO status
-    ///  as PENDING.
-    /// @param objectOwner The blockchain address of the owner of the object who should be
-    ///  creating this NFT in order for it to become a VERO
+    /// @notice Creates an NFT with token metadata stored off-chain for sender, who should be the
+    ///  owner, and stores the VERO status as PENDING. This does not create a VERO as a VERO must
+    ///  be approved before it is classified as such.
     /// @param _tokenURI The token URI, stored off-chain, to use to mint the NFT
     /// @return tokenId for the newly minted NFT
-    function createAsPending(address objectOwner, string memory _tokenURI) external virtual
+    function createAsPending(string memory _tokenURI) external virtual
         returns (uint256)
     {
+        require(msg.sender != address(0), "VERO: cannot mint against null address");
+        require(msg.sender != address(this), "VERO: cannot mint against this contract address");
+
         _tokenIds.increment();
 
         uint256 newTokenId = _tokenIds.current();
-        _mint(objectOwner, newTokenId);
+        _mint(msg.sender, newTokenId);
         _setTokenURI(newTokenId, _tokenURI);
-        _setDefaultStatus(newTokenId);
+        _setDefaultVeroStatus(newTokenId);
 
         return newTokenId;
     }
 
+    /// @notice Retrieves the VERO status for an NFT minted against the VERO smart contract
+    /// @param tokenId The token upon which to set the default status
+    /// @return VERO status for the NFT using VeroStatuses enum value
+    function getVeroStatus(uint256 tokenId) public view virtual returns (VeroStatuses) {
+        return _veroStatuses[tokenId];
+    }
+
     /// @dev Sets the default VERO status for the NFT, which is PENDING
     /// @param tokenId The token upon which to set the default status
-    function _setDefaultStatus(uint256 tokenId) internal virtual {
-        _veroStatuses[tokenId] = Statuses.PENDING;
+    function _setDefaultVeroStatus(uint256 tokenId) internal virtual {
+        _veroStatuses[tokenId] = VeroStatuses.PENDING;
     }
 
     // Overridden functions from base contracts (functions clashes) ///////////////////////////////
