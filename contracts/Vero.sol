@@ -32,6 +32,13 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
         _veroAdminAddress = msg.sender;
     }
 
+    // VERO-specific events ///////////////////////////////////////////////////////////////////////
+
+    /**
+     * @dev Emitted when new VERO admin address is set, excluding when the contract is created.
+     */
+    event VeroAdminChanged(address indexed previousAdmin, address indexed newAdmin);
+
     // VERO-specific modifiers and functions //////////////////////////////////////////////////////
 
     /// @dev Access modifier to limit calling from the VERO admin address alone
@@ -49,11 +56,15 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
     /// @notice Changes the VERO admin address to a new address, which changes admin ownership.
     ///  The VERO admin should only call this with a high level of intentionality and care.
     /// @dev Will throw errors on changes to the null address or this contract address. The
-    ///  existing VERO admin account is the only one that can call this method.
+    ///  existing VERO admin account is the only one that can call this method. Emits a
+    ///  "VeroAdminChanged" event upon changing the admin address.
     /// @param newAdmin The address for the account that will become the new admin
     function changeVeroAdmin(address newAdmin) public onlyVeroAdmin {
         require(newAdmin != address(0), "VERO: cannot change admin to null address");
         require(newAdmin != address(this), "VERO: cannot change admin to this contract address");
+        require(newAdmin != _veroAdminAddress, "VERO: cannot change admin to current admin");
+
+        emit VeroAdminChanged(_veroAdminAddress, newAdmin);
 
         _veroAdminAddress = newAdmin;
     }

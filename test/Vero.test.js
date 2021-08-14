@@ -213,12 +213,16 @@ contract('Vero', (accounts) => {
 
         it('changes and retrieves the VERO admin account responsibly', async () => {
             const firstAdmin = await contract.getVeroAdmin()
-            await contract.changeVeroAdmin(otherAddress, { from: adminAddress })
+            result = await contract.changeVeroAdmin(otherAddress, { from: adminAddress })
+            event = result.logs[0]
             const secondAdmin = await contract.getVeroAdmin()
             assert.equal(firstAdmin, adminAddress)
             assert.notEqual(firstAdmin, otherAddress)
             assert.equal(secondAdmin, otherAddress)
             assert.notEqual(secondAdmin, adminAddress)
+            assert.equal(event.event, 'VeroAdminChanged')
+            assert.equal(event.args.previousAdmin, adminAddress)
+            assert.equal(event.args.newAdmin, otherAddress)
             await contract.changeVeroAdmin(senderAddress, { from: adminAddress })
                 .should.be.rejected
             await contract.changeVeroAdmin(address0, { from: otherAddress })
