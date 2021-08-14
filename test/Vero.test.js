@@ -232,5 +232,23 @@ contract('Vero', (accounts) => {
             // Clean-up after contract-level change
             await contract.changeVeroAdmin(adminAddress, { from: otherAddress })
         })
+
+        it('approves VERO status for NFT', async () => {
+            await contract.approveAsVero(event.tokenId.toNumber(), { from: senderAddress })
+                .should.be.rejected
+            const priorVeroStatus = await contract.getVeroStatus(event.tokenId.toNumber())
+            await contract.approveAsVero(event.tokenId.toNumber(), { from: adminAddress })
+            const postVeroStatus = await contract.getVeroStatus(event.tokenId.toNumber())
+            assert.equal(postVeroStatus.toNumber(), 1)
+            assert.notEqual(priorVeroStatus.toNumber(), 1)
+            await contract.approveAsVero(event.tokenId.toNumber(), { from: adminAddress })
+                .should.be.rejected
+            const totalSupply = await contract.totalSupply()
+            const randomTokenIndex = faker.datatype.number({
+                'min': totalSupply,
+            })
+            await contract.approveAsVero(randomTokenIndex, { from: adminAddress })
+                .should.be.rejected
+        })
     })
 })

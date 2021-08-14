@@ -35,9 +35,17 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
     // VERO-specific events ///////////////////////////////////////////////////////////////////////
 
     /**
-     * @dev Emitted when new VERO admin address is set, excluding when the contract is created.
+     * @dev Emitted when new VERO admin address is set, excluding when the contract is created
      */
     event VeroAdminChanged(address indexed previousAdmin, address indexed newAdmin);
+
+    /**
+     * @dev Emitted when the VERO status of an NFT minted against this contract changes outside
+        of the initial minting
+     */
+    event VeroStatusChanged(address indexed _admin, uint256 indexed _tokenId,
+        VeroStatuses previousStatus, VeroStatuses newStatus
+    );
 
     // VERO-specific modifiers and functions //////////////////////////////////////////////////////
 
@@ -59,14 +67,13 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
     ///  existing VERO admin account is the only one that can call this method. Emits a
     ///  "VeroAdminChanged" event upon changing the admin address.
     /// @param newAdmin The address for the account that will become the new admin
-    function changeVeroAdmin(address newAdmin) public onlyVeroAdmin {
+    function changeVeroAdmin(address newAdmin) external onlyVeroAdmin {
         require(newAdmin != address(0), "VERO: cannot change admin to null address");
         require(newAdmin != address(this), "VERO: cannot change admin to this contract address");
-        require(newAdmin != _veroAdminAddress, "VERO: cannot change admin to current admin");
-
-        emit VeroAdminChanged(_veroAdminAddress, newAdmin);
+        require(newAdmin != msg.sender, "VERO: cannot change admin to current admin");
 
         _veroAdminAddress = newAdmin;
+        emit VeroAdminChanged(msg.sender, newAdmin);
     }
 
     /// @notice Creates an NFT with token metadata stored off-chain for sender, who should be the
@@ -89,10 +96,24 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
     }
 
     /// @notice Retrieves the VERO status for an NFT minted against the VERO smart contract
-    /// @param tokenId The token upon which to set the default status
+    /// @dev Throws error when token does not exist
+    /// @param _tokenId The token upon which to set the default status
     /// @return VERO status for the NFT using VeroStatuses enum value
-    function getVeroStatus(uint256 tokenId) public view virtual returns (VeroStatuses) {
-        return _veroStatuses[tokenId];
+    function getVeroStatus(uint256 _tokenId) public view virtual returns (VeroStatuses) {
+        require(_exists(_tokenId), "VERO: operator query for nonexistent token");
+        return _veroStatuses[_tokenId];
+    }
+
+    /// @notice Approves the VERO status for the token from the VERO admin address only.
+    /// @dev Emits a "VeroStatusChanged" event upon changing the VERO status. Throws error
+    ///  when token does not exist.
+    /// @param _tokenId The token to approve as a VERO
+    function approveAsVero(uint256 _tokenId) external virtual onlyVeroAdmin {
+        VeroStatuses currentStatus = getVeroStatus(_tokenId);
+        VeroStatuses newStatus = VeroStatuses.APPROVED;
+        require(currentStatus != newStatus, "VERO: cannot approve an already approved VERO");
+        _setVeroStatus(_tokenId, newStatus);
+        emit VeroStatusChanged(msg.sender, _tokenId, currentStatus, newStatus);
     }
 
     /// @dev Adds the token URI to the list of used token URIs, if unused, so it cannot be reused
@@ -102,15 +123,24 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
         require(!_tokenUriExists[_tokenUri], "VERO: cannot mint with an already used token URI");
 
         _tokenUris.push(_tokenUri);
-        uint256 tokenId = _tokenUris.length;
+        uint256 _tokenId = _tokenUris.length;
         _tokenUriExists[_tokenUri] = true;
-        return tokenId;
+        return _tokenId;
     }
 
     /// @dev Sets the default VERO status for the NFT, which is PENDING
-    /// @param tokenId The token upon which to set the default status
-    function _setDefaultVeroStatus(uint256 tokenId) internal virtual {
-        _veroStatuses[tokenId] = VeroStatuses.PENDING;
+    /// @param _tokenId The token upon which to set the default status
+    function _setDefaultVeroStatus(uint256 _tokenId) internal virtual {
+        _veroStatuses[_tokenId] = VeroStatuses.PENDING;
+    }
+
+    /// @dev Sets the VERO status for the NFT, which can only be run by the VERO admin address
+    /// @param _tokenId The token upon which to set the default status
+    /// @param newStatus The new status to be assigned to the token
+    function _setVeroStatus(uint256 _tokenId, VeroStatuses newStatus) internal virtual
+        onlyVeroAdmin
+    {
+        _veroStatuses[_tokenId] = newStatus;
     }
 
     // Overridden functions from base contracts (functions clashes) ///////////////////////////////
