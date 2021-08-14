@@ -15,16 +15,48 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 ///  a VERO more usable on the blockchain and to have token metadata stored off the blockchain.
 contract Vero is ERC721Enumerable, ERC721URIStorage {
     // Tracks VERO status for all NFTs minted against this contract
-    enum VeroStatuses { PENDING, APPROVED, REJECTED }
+    enum VeroStatuses { PENDING, APPROVED, REJECTED, REVOKED }
     mapping(uint256 => VeroStatuses) private _veroStatuses;
 
     // Tracks uniqueness of VERO token URIs, which are stored off-chain
     string[] private _tokenUris;
     mapping(string => bool) private _tokenUriExists;
 
-    constructor() ERC721("VERO", unicode"w̥") {}
+    // Define the VERO admin roles (who can only change the VERO status - not any NFT behavior)
+    address private _veroAdminAddress;
 
-    // VERO-specific functions ////////////////////////////////////////////////////////////////////
+    /// @notice Sets up the VERO admin roles that will only be able to modify the VERO status
+    ///  and not any attributes that affect this token to exist as an NFT
+    constructor() ERC721("VERO", unicode"w̥") {
+        // The VERO admin address is the one that creates this contract
+        _veroAdminAddress = msg.sender;
+    }
+
+    // VERO-specific modifiers and functions //////////////////////////////////////////////////////
+
+    /// @dev Access modifier to limit calling from the VERO admin address alone
+    modifier onlyVeroAdmin() {
+        require(msg.sender == _veroAdminAddress);
+        _;
+    }
+
+    /// @notice Retrieves the VERO admin address for anyone to see which account is the admin
+    /// @return tokenId for the newly minted NFT
+    function getVeroAdmin() public view returns (address) {
+        return _veroAdminAddress;
+    }
+
+    /// @notice Changes the VERO admin address to a new address, which changes admin ownership.
+    ///  The VERO admin should only call this with a high level of intentionality and care.
+    /// @dev Will throw errors on changes to the null address or this contract address. The
+    ///  existing VERO admin account is the only one that can call this method.
+    /// @param newAdmin The address for the account that will become the new admin
+    function changeVeroAdmin(address newAdmin) public onlyVeroAdmin {
+        require(newAdmin != address(0), "VERO: cannot change admin to null address");
+        require(newAdmin != address(this), "VERO: cannot change admin to this contract address");
+
+        _veroAdminAddress = newAdmin;
+    }
 
     /// @notice Creates an NFT with token metadata stored off-chain for sender, who should be the
     ///  owner, and stores the VERO status as PENDING. This does not create a VERO as a VERO must

@@ -189,4 +189,44 @@ contract('Vero', (accounts) => {
             })
         })
     })
+
+    describe('VERO', async () => {
+        let adminAddress
+        let senderAddress
+        let otherAddress
+        let tokenUri
+        let result
+        let event
+
+        beforeEach(async () => {
+            adminAddress = accounts[0]
+            const randomAcctIndex = faker.datatype.number({
+                'min': 1,
+                'max': accounts.length - 1,
+            })
+            senderAddress = accounts[randomAcctIndex]
+            otherAddress = accounts[((randomAcctIndex + 1) % (accounts.length - 1)) + 1]
+            tokenUri = faker.internet.url()
+            result = await contract.createAsPending(tokenUri, { from: senderAddress })
+            event = result.logs[0].args
+        })
+
+        it('changes and retrieves the VERO admin account responsibly', async () => {
+            const firstAdmin = await contract.getVeroAdmin()
+            await contract.changeVeroAdmin(otherAddress, { from: adminAddress })
+            const secondAdmin = await contract.getVeroAdmin()
+            assert.equal(firstAdmin, adminAddress)
+            assert.notEqual(firstAdmin, otherAddress)
+            assert.equal(secondAdmin, otherAddress)
+            assert.notEqual(secondAdmin, adminAddress)
+            await contract.changeVeroAdmin(senderAddress, { from: adminAddress })
+                .should.be.rejected
+            await contract.changeVeroAdmin(address0, { from: otherAddress })
+                .should.be.rejected
+            await contract.changeVeroAdmin(contract.address, { from: otherAddress })
+                .should.be.rejected
+            // Clean-up after contract-level change
+            await contract.changeVeroAdmin(adminAddress, { from: otherAddress })
+        })
+    })
 })
