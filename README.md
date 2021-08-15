@@ -1,6 +1,6 @@
 # Virtual Equivalents of Real Objects (VEROs)
 ## Intro
-More details to come...
+To learn about what VEROs are and how they can transform funding for museums, visit the VERO web site at https://vero-nft.org
 
 ## What extra attributes does a VERO have over a standard NFT?
 * The associated 3D model is as faithful as it can be reasonably expected to be to the real object. But note that a collector could pay to upgrade their VERO when a higher resolution model becomes available through the use of a new or better imaging technology.
