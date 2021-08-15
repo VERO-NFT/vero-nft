@@ -128,3 +128,8 @@ build/
 
 # Jetbrains
 .idea
+
+# Files that can contain secrets
+.secrets.*
+*.env
+*.env.enc
