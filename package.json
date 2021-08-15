@@ -1,0 +1,33 @@
+{
+  "name": "vero-nft",
+  "version": "1.0.0",
+  "description": "Project for the smart contract for Virtual Equivalents of Real Objects, or VEROs for short",
+  "main": "index.js",
+  "scripts": {
+    "test": "truffle test test/*.test.js",
+    "ganache-start": "ganache-cli --port=7545 --networkId=5777 > /dev/null &",
+    "migrate": "truffle migrate",
+    "compile-contract": "truffle compile contracts/**/*.sol",
+    "solhint": "./node_modules/.bin/solhint -f table contracts/**/*.sol"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jcora-nyt/vero-nft.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jcora-nyt/vero-nft/issues"
+  },
+  "homepage": "https://github.com/jcora-nyt/vero-nft#readme",
+  "devDependencies": {
+    "@openzeppelin/contracts": "^4.2.0",
+    "chai": "^4.3.4",
+    "chai-as-promised": "^7.1.1",
+    "faker": "^5.5.3",
+    "ganache-cli": "^6.12.2",
+    "solhint": "^3.3.6",
+    "truffle": "^5.1.65"
+  }
+}
