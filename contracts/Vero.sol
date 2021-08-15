@@ -116,6 +116,36 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
         emit VeroStatusChanged(msg.sender, _tokenId, currentStatus, newStatus);
     }
 
+    /// @notice Rejects the VERO status for the token from the VERO admin address only. Must
+    ///  be in a PENDING status to reject
+    /// @dev Emits a "VeroStatusChanged" event upon changing the VERO status. Throws error
+    ///  when token does not exist.
+    /// @param _tokenId The token to reject as a VERO
+    function rejectAsVero(uint256 _tokenId) external virtual onlyVeroAdmin {
+        VeroStatuses currentStatus = getVeroStatus(_tokenId);
+        VeroStatuses newStatus = VeroStatuses.REJECTED;
+        require(currentStatus == VeroStatuses.PENDING,
+            "VERO: cannot reject a VERO that is not in a PENDING status"
+        );
+        _setVeroStatus(_tokenId, newStatus);
+        emit VeroStatusChanged(msg.sender, _tokenId, currentStatus, newStatus);
+    }
+
+    /// @notice Revokes the VERO status for the token from the VERO admin address only. Must
+    ///  be in an APPROVED status to revoke
+    /// @dev Emits a "VeroStatusChanged" event upon changing the VERO status. Throws error
+    ///  when token does not exist.
+    /// @param _tokenId The token to revoke as a VERO
+    function revokeAsVero(uint256 _tokenId) external virtual onlyVeroAdmin {
+        VeroStatuses currentStatus = getVeroStatus(_tokenId);
+        VeroStatuses newStatus = VeroStatuses.REVOKED;
+        require(currentStatus == VeroStatuses.APPROVED,
+            "VERO: cannot revoke a VERO that is not in an APPROVED status"
+        );
+        _setVeroStatus(_tokenId, newStatus);
+        emit VeroStatusChanged(msg.sender, _tokenId, currentStatus, newStatus);
+    }
+
     /// @dev Adds the token URI to the list of used token URIs, if unused, so it cannot be reused
     /// @param @param _tokenURI The token URI to not allow for subsequent minting upon
     /// @return tokenId for the token URI

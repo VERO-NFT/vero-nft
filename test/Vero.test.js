@@ -233,21 +233,87 @@ contract('Vero', (accounts) => {
             await contract.changeVeroAdmin(adminAddress, { from: otherAddress })
         })
 
-        it('approves VERO status for NFT', async () => {
-            await contract.approveAsVero(event.tokenId.toNumber(), { from: senderAddress })
+        it('approves NFT as a VERO', async () => {
+            const tokenId = event.tokenId.toNumber()
+            const priorVeroStatus = await contract.getVeroStatus(tokenId)
+            await contract.approveAsVero(tokenId, { from: senderAddress })
                 .should.be.rejected
-            const priorVeroStatus = await contract.getVeroStatus(event.tokenId.toNumber())
-            await contract.approveAsVero(event.tokenId.toNumber(), { from: adminAddress })
-            const postVeroStatus = await contract.getVeroStatus(event.tokenId.toNumber())
-            assert.equal(postVeroStatus.toNumber(), 1)
+            result = await contract.approveAsVero(tokenId, { from: adminAddress })
+            event = result.logs[0]
+            const newVeroStatus = await contract.getVeroStatus(tokenId)
+            assert.equal(newVeroStatus.toNumber(), 1)
             assert.notEqual(priorVeroStatus.toNumber(), 1)
-            await contract.approveAsVero(event.tokenId.toNumber(), { from: adminAddress })
+            assert.equal(event.event, 'VeroStatusChanged')
+            assert.equal(event.args._admin, adminAddress)
+            assert.equal(event.args._tokenId, tokenId)
+            assert.equal(event.args.previousStatus, priorVeroStatus.toNumber())
+            assert.equal(event.args.newStatus, newVeroStatus.toNumber())
+            await contract.approveAsVero(tokenId, { from: adminAddress })
                 .should.be.rejected
             const totalSupply = await contract.totalSupply()
             const randomTokenIndex = faker.datatype.number({
                 'min': totalSupply,
             })
             await contract.approveAsVero(randomTokenIndex, { from: adminAddress })
+                .should.be.rejected
+        })
+
+        it('rejects PENDING NFT as a VERO', async () => {
+            const tokenId = event.tokenId.toNumber()
+            const priorVeroStatus = await contract.getVeroStatus(tokenId)
+            await contract.rejectAsVero(tokenId, { from: senderAddress })
+                .should.be.rejected
+            result = await contract.rejectAsVero(event.tokenId.toNumber(), { from: adminAddress })
+            event = result.logs[0]
+            const newVeroStatus = await contract.getVeroStatus(tokenId)
+            assert.equal(newVeroStatus.toNumber(), 2)
+            assert.notInclude([1, 2, 3], priorVeroStatus.toNumber())
+            assert.equal(event.event, 'VeroStatusChanged')
+            assert.equal(event.args._admin, adminAddress)
+            assert.equal(event.args._tokenId, tokenId)
+            assert.equal(event.args.previousStatus, priorVeroStatus.toNumber())
+            assert.equal(event.args.newStatus, newVeroStatus.toNumber())
+            await contract.rejectAsVero(tokenId, { from: adminAddress })
+                .should.be.rejected
+            await contract.approveAsVero(tokenId, { from: adminAddress })
+            await contract.rejectAsVero(tokenId, { from: adminAddress })
+                .should.be.rejected
+            await contract.revokeAsVero(tokenId, { from: adminAddress })
+            await contract.rejectAsVero(tokenId, { from: adminAddress })
+                .should.be.rejected
+            const totalSupply = await contract.totalSupply()
+            const randomTokenIndex = faker.datatype.number({
+                'min': totalSupply,
+            })
+            await contract.rejectAsVero(randomTokenIndex, { from: adminAddress })
+                .should.be.rejected
+        })
+
+        it('revokes APPROVED NFT as a VERO', async () => {
+            const tokenId = event.tokenId.toNumber()
+            await contract.revokeAsVero(tokenId, { from: adminAddress })
+                .should.be.rejected
+            await contract.approveAsVero(tokenId, { from: adminAddress })
+            const priorVeroStatus = await contract.getVeroStatus(tokenId)
+            await contract.revokeAsVero(tokenId, { from: senderAddress })
+                .should.be.rejected
+            result = await contract.revokeAsVero(event.tokenId.toNumber(), { from: adminAddress })
+            event = result.logs[0]
+            const newVeroStatus = await contract.getVeroStatus(tokenId)
+            assert.equal(newVeroStatus.toNumber(), 3)
+            assert.notInclude([0, 2, 3], priorVeroStatus.toNumber())
+            assert.equal(event.event, 'VeroStatusChanged')
+            assert.equal(event.args._admin, adminAddress)
+            assert.equal(event.args._tokenId, tokenId)
+            assert.equal(event.args.previousStatus, priorVeroStatus.toNumber())
+            assert.equal(event.args.newStatus, newVeroStatus.toNumber())
+            await contract.revokeAsVero(tokenId, { from: adminAddress })
+                .should.be.rejected
+            const totalSupply = await contract.totalSupply()
+            const randomTokenIndex = faker.datatype.number({
+                'min': totalSupply,
+            })
+            await contract.revokeAsVero(randomTokenIndex, { from: adminAddress })
                 .should.be.rejected
         })
     })
