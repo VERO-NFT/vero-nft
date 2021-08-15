@@ -7,6 +7,7 @@
     "test": "truffle test test/*.test.js",
     "ganache-start": "ganache-cli --port=7545 --networkId=5777 > /dev/null &",
     "migrate": "truffle migrate",
+    "migrate-ropsten": "truffle migrate --network ropsten",
     "compile-contract": "truffle compile contracts/**/*.sol",
     "solhint": "./node_modules/.bin/solhint -f table contracts/**/*.sol"
   },
@@ -23,6 +24,7 @@
   "homepage": "https://github.com/jcora-nyt/vero-nft#readme",
   "devDependencies": {
     "@openzeppelin/contracts": "^4.2.0",
+    "@truffle/hdwallet-provider": "^1.4.3",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "faker": "^5.5.3",
