@@ -1,4 +1,8 @@
 # Virtual Equivalents of Real Objects (VEROs)
+
+## Status
+[![CI Status](https://github.com/VERO-NFT/vero-nft/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/VERO-NFT/vero-nft/actions/workflows/ci.yml)
+
 ## Intro
 To learn about what VEROs are and how they can transform funding for museums, visit the VERO web site at https://vero-nft.org
 
