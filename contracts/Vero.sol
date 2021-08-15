@@ -4,7 +4,8 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
+import "./IVero.sol";
+import "./VeroStatuses.sol";
 
 /// @title Smart contract for Virtual Equivalents of Real Objects, or VEROs for short
 /// @author Joe Cora
@@ -13,9 +14,8 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 /// @dev Leverages the OpenZeppelin library to implement a contract that contains all of the
 ///  standard NFT (ERC-721) functions. Using some ERC-721 optional extension contracts to make
 ///  a VERO more usable on the blockchain and to have token metadata stored off the blockchain.
-contract Vero is ERC721Enumerable, ERC721URIStorage {
+contract Vero is ERC721Enumerable, ERC721URIStorage, IVero {
     // Tracks VERO status for all NFTs minted against this contract
-    enum VeroStatuses { PENDING, APPROVED, REJECTED, REVOKED }
     mapping(uint256 => VeroStatuses) private _veroStatuses;
 
     // Tracks uniqueness of VERO token URIs, which are stored off-chain
@@ -57,7 +57,7 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
 
     /// @notice Retrieves the VERO admin address for anyone to see which account is the admin
     /// @return tokenId for the newly minted NFT
-    function getVeroAdmin() public view returns (address) {
+    function getVeroAdmin() external view override returns (address) {
         return _veroAdminAddress;
     }
 
@@ -67,7 +67,7 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
     ///  existing VERO admin account is the only one that can call this method. Emits a
     ///  "VeroAdminChanged" event upon changing the admin address.
     /// @param newAdmin The address for the account that will become the new admin
-    function changeVeroAdmin(address newAdmin) external onlyVeroAdmin {
+    function changeVeroAdmin(address newAdmin) external override onlyVeroAdmin {
         require(newAdmin != address(0), "VERO: cannot change admin to null address");
         require(newAdmin != address(this), "VERO: cannot change admin to this contract address");
         require(newAdmin != msg.sender, "VERO: cannot change admin to current admin");
@@ -81,7 +81,7 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
     ///  be approved before it is classified as such.
     /// @param _tokenURI The token URI, stored off-chain, to use to mint the NFT
     /// @return tokenId for the newly minted NFT
-    function createAsPending(string memory _tokenURI) external virtual
+    function createAsPending(string memory _tokenURI) external virtual override
         returns (uint256)
     {
         require(msg.sender != address(0), "VERO: cannot mint against null address");
@@ -99,17 +99,18 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
     /// @dev Throws error when token does not exist
     /// @param _tokenId The token upon which to set the default status
     /// @return VERO status for the NFT using VeroStatuses enum value
-    function getVeroStatus(uint256 _tokenId) public view virtual returns (VeroStatuses) {
+    function getVeroStatus(uint256 _tokenId) external view virtual override returns (VeroStatuses) {
         require(_exists(_tokenId), "VERO: operator query for nonexistent token");
-        return _veroStatuses[_tokenId];
+        return _getVeroStatus(_tokenId);
     }
 
     /// @notice Approves the VERO status for the token from the VERO admin address only.
     /// @dev Emits a "VeroStatusChanged" event upon changing the VERO status. Throws error
     ///  when token does not exist.
     /// @param _tokenId The token to approve as a VERO
-    function approveAsVero(uint256 _tokenId) external virtual onlyVeroAdmin {
-        VeroStatuses currentStatus = getVeroStatus(_tokenId);
+    function approveAsVero(uint256 _tokenId) external virtual override onlyVeroAdmin {
+        require(_exists(_tokenId), "VERO: operator query for nonexistent token");
+        VeroStatuses currentStatus = _getVeroStatus(_tokenId);
         VeroStatuses newStatus = VeroStatuses.APPROVED;
         require(currentStatus != newStatus, "VERO: cannot approve an already approved VERO");
         _setVeroStatus(_tokenId, newStatus);
@@ -121,8 +122,9 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
     /// @dev Emits a "VeroStatusChanged" event upon changing the VERO status. Throws error
     ///  when token does not exist.
     /// @param _tokenId The token to reject as a VERO
-    function rejectAsVero(uint256 _tokenId) external virtual onlyVeroAdmin {
-        VeroStatuses currentStatus = getVeroStatus(_tokenId);
+    function rejectAsVero(uint256 _tokenId) external virtual override onlyVeroAdmin {
+        require(_exists(_tokenId), "VERO: operator query for nonexistent token");
+        VeroStatuses currentStatus = _getVeroStatus(_tokenId);
         VeroStatuses newStatus = VeroStatuses.REJECTED;
         require(currentStatus == VeroStatuses.PENDING,
             "VERO: cannot reject a VERO that is not in a PENDING status"
@@ -136,8 +138,9 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
     /// @dev Emits a "VeroStatusChanged" event upon changing the VERO status. Throws error
     ///  when token does not exist.
     /// @param _tokenId The token to revoke as a VERO
-    function revokeAsVero(uint256 _tokenId) external virtual onlyVeroAdmin {
-        VeroStatuses currentStatus = getVeroStatus(_tokenId);
+    function revokeAsVero(uint256 _tokenId) external virtual override onlyVeroAdmin {
+        require(_exists(_tokenId), "VERO: operator query for nonexistent token");
+        VeroStatuses currentStatus = _getVeroStatus(_tokenId);
         VeroStatuses newStatus = VeroStatuses.REVOKED;
         require(currentStatus == VeroStatuses.APPROVED,
             "VERO: cannot revoke a VERO that is not in an APPROVED status"
@@ -164,6 +167,13 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
         _veroStatuses[_tokenId] = VeroStatuses.PENDING;
     }
 
+    /// @dev Internal function to handle retrieving VERO status
+    /// @param _tokenId The token upon which to set the default status
+    /// @return VERO status for the NFT using VeroStatuses enum value
+    function _getVeroStatus(uint256 _tokenId) internal view virtual returns (VeroStatuses) {
+        return _veroStatuses[_tokenId];
+    }
+
     /// @dev Sets the VERO status for the NFT, which can only be run by the VERO admin address
     /// @param _tokenId The token upon which to set the default status
     /// @param newStatus The new status to be assigned to the token
@@ -177,7 +187,7 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
 
     /// @notice Checks if the incoming interface ID is supported by this contract. The contract
     ///  supports standard NFT (ERC-721) interface and all of the specifications that that contract
-    ///  is extended from.
+    ///  is extended from. Also supports the VERO interface.
     /// @dev Calls the ERC721Enumerable base method as that method extends from ERC721 and calls
     ///  that base method, too.
     /// @param interfaceId ID for the interface to check for contract support upon
@@ -186,7 +196,9 @@ contract Vero is ERC721Enumerable, ERC721URIStorage {
         override(ERC721, ERC721Enumerable)
         returns (bool)
     {
-        return ERC721Enumerable.supportsInterface(interfaceId);
+        return
+            interfaceId == type(IVero).interfaceId ||
+            ERC721Enumerable.supportsInterface(interfaceId);
     }
 
     /// @notice Retrieves the token URI, which is stored off-chain, for the specified token ID
