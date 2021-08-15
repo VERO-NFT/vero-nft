@@ -1,4 +1,4 @@
-# Virtual Equivalents of Real Objects (VEROs)
+# Smart Contract for Virtual Equivalents of Real Objects (VEROs)
 
 ## Status
 [![CI Status](https://github.com/VERO-NFT/vero-nft/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/VERO-NFT/vero-nft/actions/workflows/ci.yml)
@@ -6,11 +6,28 @@
 ## Intro
 To learn about what VEROs are and how they can transform funding for museums, visit the VERO web site at https://vero-nft.org
 
-## What extra attributes does a VERO have over a standard NFT?
-* The associated 3D model is as faithful as it can be reasonably expected to be to the real object. But note that a collector could pay to upgrade their VERO when a higher resolution model becomes available through the use of a new or better imaging technology.
-* The real object can be unambiguously identified through a unique identifier, e.g. museum barcode or universally unique identifier (UUID).
-* The first transaction of the VERO is between the VERO purchaser and the owner of the real object at the time of sale. Any subsequent owners of the real object would be unable to produce and sell their own VERO from it. Therefore, the existence of the VERO should be made known to any prospective buyer of the real object prior to sale.
-* The real object is trackable and remains demonstrably preserved. VEROs cease to exist (are invalidated) when their real object equivalents are destroyed. This firmly anchors the VERO to the real object. Furthermore, the omission of this criterion could lead to the frivolous generation of VEROs from any objects that could then be readily disposed of, which might encourage the generation of VEROs from poached and illegally collected specimens.
+## Requirements
+* Node version 12 or 14 installed
+
+## How do I install and run this smart contract locally?
+* Download the repo (obviously!) and navigate to the root folder of the repo from a Unix-based terminal.
+* Install all the required packages with `npm install`.
+* Start up the CLI version of Ganache, the local development blockchain software, by running `npm run ganache-start`.
+* Deploy the smart contracts in Ganache by running `npm run migrate`.
+* Run the test suite to make sure everything is working with `npm test`.
+* You can now confidently build apps that mint NFTs with the VERO smart contract!
+
+## How do I build apps against the VERO smart contract on Ethereum test networks?
+* We already have the VERO smart contract deployed to the blockchain for a couple popular test networks. Here are the
+addresses for the contracts:
+  * Ropsten: *0x07Ffe55d6127120145B9aaef4649678FE21ad4CC*
+  * Kovan: *TBD*
+* Although there isn't anything automated yet to handle approvals on the test networks, reach out to
+[Joe Cora](cora.1@osu.edu) with the request. You can ask him for whatever help you need!
+
+## Helpful information
+* External functions for the VERO smart contract: [interface file](../blob/main/contracts/IVero.sol)
+* VERO metadata schema: [schema file](../blob/main/schema/vero-metadata-schema.json)
 
 ## Publication of concept
 Bolton, S.J. and Cora, J.R. (2021). Virtual Equivalents of Real Objects (VEROs): A type of non-fungible token

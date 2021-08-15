@@ -8,6 +8,7 @@
     "ganache-start": "ganache-cli --port=7545 --networkId=5777 > /dev/null &",
     "migrate": "truffle migrate",
     "migrate-ropsten": "truffle migrate --network ropsten",
+    "migrate-kovan": "truffle migrate --network kovan",
     "compile-contract": "truffle compile contracts/**/*.sol",
     "solhint": "./node_modules/.bin/solhint -f table contracts/**/*.sol"
   },

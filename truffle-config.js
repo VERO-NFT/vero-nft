@@ -13,11 +13,21 @@ module.exports = {
       networkCheckTimeout: 10000,
       provider: () => {
         return new HDWalletProvider(
-            secrets.ropsten.mnemonic,
-            `wss://ropsten.infura.io/ws/v3/${secrets.ropsten.projectId}`
+            secrets.test.mnemonic,
+            `wss://ropsten.infura.io/ws/v3/${secrets.test.projectId}`
         );
       },
       network_id: "3",
+    },
+    kovan: {
+      networkCheckTimeout: 10000,
+      provider: () => {
+        return new HDWalletProvider(
+            secrets.test.mnemonic,
+            `wss://kovan.infura.io/ws/v3/${secrets.test.projectId}`
+        );
+      },
+      network_id: "42",
     },
   },
   mocha: {

@@ -53,6 +53,11 @@ contract('Vero', (accounts) => {
             assert.equal(event.to, accounts[0], 'to is correct')
         })
 
+        it('has a tokenURI', async () => {
+            const retrievedTokenUri = await contract.tokenURI(event.tokenId.toNumber())
+            assert.equal(retrievedTokenUri, tokenUri)
+        })
+
         it('assures token URI for NFT is unique', async () => {
             await contract.createAsPending(tokenUri).should.be.rejected
         })
