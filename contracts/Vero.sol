@@ -27,7 +27,7 @@ contract Vero is ERC721Enumerable, ERC721URIStorage, IVero {
 
     /// @notice Sets up the VERO admin roles that will only be able to modify the VERO status
     ///  and not any attributes that affect this token to exist as an NFT
-    constructor() ERC721("VERO", unicode"w̥") {
+    constructor() ERC721("VERO", "VRO") {
         // The VERO admin address is the one that creates this contract
         _veroAdminAddress = msg.sender;
     }

@@ -10,6 +10,7 @@
     "migrate-ropsten": "truffle migrate --network ropsten",
     "migrate-kovan": "truffle migrate --network kovan",
     "compile-contract": "truffle compile contracts/**/*.sol",
+    "flatten-vero": "./node_modules/.bin/truffle-flattener ./contracts/Vero.sol > ./build/VeroFull.sol",
     "solhint": "./node_modules/.bin/solhint -f table contracts/**/*.sol"
   },
   "repository": {
@@ -31,6 +32,7 @@
     "faker": "^5.5.3",
     "ganache-cli": "^6.12.2",
     "solhint": "^3.3.6",
-    "truffle": "^5.1.65"
+    "truffle": "^5.1.65",
+    "truffle-flattener": "^1.5.0"
   }
 }
