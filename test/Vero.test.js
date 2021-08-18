@@ -30,7 +30,7 @@ contract('Vero', (accounts) => {
 
         it('has a symbol', async () => {
             const symbol = await contract.symbol()
-            assert.equal(symbol, 'w̥')
+            assert.equal(symbol, 'VRO')
         })
     })
 
