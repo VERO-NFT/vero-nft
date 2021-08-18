@@ -20,7 +20,7 @@ To learn about what VEROs are and how they can transform funding for museums, vi
 ## How do I build apps against the VERO smart contract on Ethereum test networks?
 * We already have the VERO smart contract deployed to the blockchain for a couple popular test networks. Here are the
 addresses for the contracts:
-  * Ropsten: *0x07Ffe55d6127120145B9aaef4649678FE21ad4CC*
+  * Ropsten: *0x46d74D161e6b815e4F7d13115D58512Ab3458a90*
   * Kovan: *TBD*
 * Although there isn't anything automated yet to handle approvals on the test networks, reach out to
 [Joe Cora](cora.1@osu.edu) with the request. You can ask him for whatever help you need!
