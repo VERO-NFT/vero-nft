@@ -22,6 +22,7 @@ To learn about what VEROs are and how they can transform funding for museums, vi
 addresses for the contracts:
   * Ropsten: *0x46d74D161e6b815e4F7d13115D58512Ab3458a90*
   * Kovan: *TBD*
+  * Rinkeby: *0x07Ffe55d6127120145B9aaef4649678FE21ad4CC*
 * Although there isn't anything automated yet to handle approvals on the test networks, reach out to
 [Joe Cora](cora.1@osu.edu) with the request. You can ask him for whatever help you need!
 

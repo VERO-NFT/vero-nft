@@ -4,23 +4,31 @@
   "properties": {
     "name": {
       "type": "string",
-      "description": "Identifies the asset to which this NFT represents"
+      "description": "Identifies the asset to which this NFT represents. Required"
     },
     "description": {
       "type": "string",
-      "description": "Describes the asset to which this NFT represents"
+      "description": "Describes the asset to which this NFT represents. Required"
     },
     "external_url": {
       "type": "string",
-      "description": "A URI pointing to a single, public record for the real object, which lists the real object owner and the unique identifiers."
+      "description": "A URI pointing to a single, public record for the real object, which lists the real object owner and the unique identifiers. Required"
     },
     "image": {
       "type": "string",
-      "description": "A URI pointing to a resource with mime type image/* representing the asset to which this NFT represents."
+      "description": "A URI pointing to a resource with mime type image/* representing the asset to which this NFT represents. Optional"
     },
     "model": {
       "type": "string",
-      "description": "A URI pointing to 3D model representing the asset to which this NFT represents, which is required to become a VERO. File must be freely available and not behind any access control gating."
+      "description": "A URI pointing to 3D model representing the asset to which this NFT represents, which is required to become a VERO. File must be freely available and not behind any access control gating. Required"
+    },
+    "animation_url": {
+      "type": "string",
+      "description": "A URI pointing to 3D model that will be shown interactively on sites. Use either GLB or GLTF 3D model file formats. Optional"
+    },
+    "youtube_url": {
+      "type": "string",
+      "description": "A URL pointing to a Youtube video highlighting the VERO. Optional"
     }
   }
 }

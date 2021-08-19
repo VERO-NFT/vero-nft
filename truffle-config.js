@@ -32,6 +32,16 @@ module.exports = {
       },
       network_id: '42',
     },
+    rinkeby: {
+      networkCheckTimeout: 10000,
+      provider: () => {
+        return new HDWalletProvider(
+            secrets.test.mnemonic,
+            `wss://rinkeby.infura.io/ws/v3/${secrets.test.projectId}`
+        );
+      },
+      network_id: '4',
+    },
   },
   mocha: {
   },
