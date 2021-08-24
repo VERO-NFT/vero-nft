@@ -79,6 +79,7 @@ contract Vero is ERC721Enumerable, ERC721URIStorage, IVero {
     /// @notice Creates an NFT with token metadata stored off-chain for sender, who should be the
     ///  owner, and stores the VERO status as PENDING. This does not create a VERO as a VERO must
     ///  be approved before it is classified as such.
+    /// @dev Throws error on already used token URI or token ID overflow
     /// @param _tokenURI The token URI, stored off-chain, to use to mint the NFT
     /// @return tokenId for the newly minted NFT
     function createAsPending(string memory _tokenURI) external virtual override
@@ -149,7 +150,8 @@ contract Vero is ERC721Enumerable, ERC721URIStorage, IVero {
         emit VeroStatusChanged(msg.sender, _tokenId, currentStatus, newStatus);
     }
 
-    /// @dev Adds the token URI to the list of used token URIs, if unused, so it cannot be reused
+    /// @dev Adds the token URI to the list of used token URIs, if unused, so it cannot be reused. Throws an error
+    ///  if the tokenId is not greater than 0
     /// @param @param _tokenURI The token URI to not allow for subsequent minting upon
     /// @return tokenId for the token URI
     function _consumeTokenUri(string memory _tokenUri) internal virtual returns (uint256)  {
@@ -157,6 +159,7 @@ contract Vero is ERC721Enumerable, ERC721URIStorage, IVero {
 
         _tokenUris.push(_tokenUri);
         uint256 _tokenId = _tokenUris.length;
+        require(_tokenId > 0);
         _tokenUriExists[_tokenUri] = true;
         return _tokenId;
     }
