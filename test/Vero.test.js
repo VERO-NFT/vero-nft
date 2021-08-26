@@ -322,4 +322,93 @@ contract('Vero', (accounts) => {
                 .should.be.rejected
         })
     })
+
+    describe('security', async () => {
+        let adminAddress
+        let senderAddress
+        let otherAddress
+        let tokenUri
+        let result
+        let event
+
+        beforeEach(async () => {
+            adminAddress = accounts[0]
+            const randomAcctIndex = faker.datatype.number({
+                'min': 1,
+                'max': accounts.length - 1,
+            })
+            senderAddress = accounts[randomAcctIndex]
+            otherAddress = accounts[((randomAcctIndex + 1) % (accounts.length - 1)) + 1]
+            tokenUri = faker.internet.url()
+            result = await contract.createAsPending(tokenUri, { from: senderAddress })
+            event = result.logs[0].args
+        })
+
+        it('pauses and unpauses a smart contract', async () => {
+            await contract.pause({ from: senderAddress })
+                .should.be.rejected
+            await contract.pause({ from: adminAddress })
+            await contract.pause({ from: adminAddress })
+                .should.be.rejected
+            await contract.createAsPending(faker.internet.url(), { from: senderAddress })
+                .should.be.rejected
+            await contract.unpause({ from: senderAddress })
+                .should.be.rejected
+            await contract.unpause({ from: adminAddress })
+            await contract.unpause({ from: adminAddress })
+                .should.be.rejected
+            await contract.createAsPending(faker.internet.url(), { from: senderAddress })
+                .should.not.be.rejected
+        })
+
+        it('works as expected after pause', async () => {
+            const tokenId = event.tokenId.toNumber()
+            await contract.pause({ from: adminAddress })
+            await contract.changeVeroAdmin(otherAddress, { from: adminAddress })
+                .should.be.rejected
+            await contract.createAsPending(faker.internet.url(), { from: senderAddress })
+                .should.be.rejected
+            await contract.approveAsVero(tokenId, { from: adminAddress })
+                .should.be.rejected
+            await contract.rejectAsVero(tokenId, { from: adminAddress })
+                .should.be.rejected
+            await contract.revokeAsVero(tokenId, { from: adminAddress })
+                .should.be.rejected
+            await contract.safeTransferFrom(senderAddress, otherAddress, tokenId, { from: senderAddress })
+                .should.be.rejected
+            await contract.transferFrom(otherAddress, senderAddress, tokenId, { from: otherAddress })
+                .should.be.rejected
+            await contract.approve(otherAddress, tokenId, { from: senderAddress })
+                .should.be.rejected
+            await contract.setApprovalForAll(otherAddress, true, { from: senderAddress })
+                .should.be.rejected
+            // Clean-up after contract-level change
+            await contract.unpause({ from: adminAddress })
+        })
+
+        it('works as expected after unpause', async () => {
+            const tokenId = event.tokenId.toNumber()
+            await contract.pause({ from: adminAddress })
+            await contract.unpause({ from: adminAddress })
+            await contract.changeVeroAdmin(otherAddress, { from: adminAddress })
+                .should.not.be.rejected
+            await contract.changeVeroAdmin(adminAddress, { from: otherAddress })
+            await contract.createAsPending(faker.internet.url(), { from: senderAddress })
+                .should.not.be.rejected
+            await contract.rejectAsVero(tokenId, { from: adminAddress })
+                .should.not.be.rejected
+            await contract.approveAsVero(tokenId, { from: adminAddress })
+                .should.not.be.rejected
+            await contract.revokeAsVero(tokenId, { from: adminAddress })
+                .should.not.be.rejected
+            await contract.safeTransferFrom(senderAddress, otherAddress, tokenId, { from: senderAddress })
+                .should.not.be.rejected
+            await contract.transferFrom(otherAddress, senderAddress, tokenId, { from: otherAddress })
+                .should.not.be.rejected
+            await contract.approve(otherAddress, tokenId, { from: senderAddress })
+                .should.not.be.rejected
+            await contract.setApprovalForAll(otherAddress, true, { from: senderAddress })
+                .should.not.be.rejected
+        })
+    })
 })
