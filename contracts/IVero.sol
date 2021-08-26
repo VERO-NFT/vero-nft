@@ -8,6 +8,8 @@ import "./VeroStatuses.sol";
 /// @notice Find additional details in VERO smart contract implementation (Vero.sol)
 /// @author Joe Cora
 interface IVero {
+    function pause() external;
+    function unpause() external;
     function getVeroAdmin() external view returns (address);
     function changeVeroAdmin(address newAdmin) external;
     function createAsPending(string memory _tokenURI) external returns (uint256);
