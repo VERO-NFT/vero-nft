@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/jcora-nyt/vero-nft#readme",
   "devDependencies": {
-    "@openzeppelin/contracts": "^4.2.0",
+    "@openzeppelin/contracts": "^4.3.1",
     "@truffle/hdwallet-provider": "^1.4.3",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
